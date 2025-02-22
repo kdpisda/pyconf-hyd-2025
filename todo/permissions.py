@@ -15,4 +15,4 @@ class TodoPermission(permissions.BasePermission):
         if hasattr(obj, "owner"):
             return obj.owner == request.user
         # For Item model, check the list owner
-        return obj.todo_list.owner == request.user
+        return obj.list.owner == request.user

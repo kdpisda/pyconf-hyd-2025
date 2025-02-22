@@ -37,7 +37,7 @@ class ItemViewSet(viewsets.ModelViewSet):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ["completed", "priority", "todo_list"]
+    filterset_fields = ["completed", "priority", "list"]
     search_fields = ["title", "description"]
     ordering_fields = ["due_date", "created_at", "priority"]
     ordering = ["due_date", "-priority"]
@@ -45,4 +45,4 @@ class ItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.request.user.is_staff:
             return Item.objects.all()
-        return Item.objects.filter(todo_list__owner=self.request.user)
+        return Item.objects.filter(list__owner=self.request.user)

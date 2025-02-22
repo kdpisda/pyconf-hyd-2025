@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import serializers
 
 from todo.models import Item
@@ -5,6 +6,11 @@ from todo.models import List
 
 
 class ItemSerializer(serializers.ModelSerializer):
+    def validate_due_date(self, value):
+        if value and value < timezone.now():
+            raise serializers.ValidationError("Due date cannot be in the past")
+        return value
+
     class Meta:
         model = Item
         fields = [
@@ -15,7 +21,7 @@ class ItemSerializer(serializers.ModelSerializer):
             "due_date",
             "completed",
             "priority",
-            "todo_list",
+            "list",
         ]
         read_only_fields = ["created_at"]
 

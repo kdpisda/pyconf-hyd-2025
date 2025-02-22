@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.html import format_html
 
@@ -7,12 +9,19 @@ from todo.models import List
 from todo.models import Priority
 
 
+# Add search fields to UserAdmin if not already configured
+UserAdmin.search_fields = ["username", "first_name", "last_name", "email"]
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
+
+
 @admin.register(List)
 class ListAdmin(admin.ModelAdmin):
     list_display = ["title", "owner", "item_count", "created_at"]
     list_filter = ["owner", "created_at"]
     search_fields = ["title", "description", "owner__username"]
     readonly_fields = ["created_at"]
+    autocomplete_fields = ["owner"]
 
     def item_count(self, obj):
         return obj.items.count()
@@ -24,17 +33,18 @@ class ListAdmin(admin.ModelAdmin):
 class ItemAdmin(admin.ModelAdmin):
     list_display = [
         "title",
-        "todo_list",
+        "list",
         "priority_badge",
         "due_date_status",
         "completed",
         "created_at",
     ]
-    list_filter = ["completed", "priority", "todo_list", "created_at"]
-    search_fields = ["title", "description", "todo_list__title"]
+    list_filter = ["completed", "priority", "list", "created_at"]
+    search_fields = ["title", "description", "list__title"]
     readonly_fields = ["created_at"]
     list_editable = ["completed"]
     ordering = ["due_date", "-priority"]
+    autocomplete_fields = ["list"]
 
     def priority_badge(self, obj):
         colors = {
@@ -66,7 +76,7 @@ class ItemAdmin(admin.ModelAdmin):
     due_date_status.short_description = "Status"
 
     fieldsets = (
-        ("Basic Information", {"fields": ("title", "description", "todo_list")}),
+        ("Basic Information", {"fields": ("title", "description", "list")}),
         ("Status", {"fields": ("completed", "priority", "due_date")}),
         ("Metadata", {"fields": ("created_at",), "classes": ("collapse",)}),
     )
@@ -74,10 +84,10 @@ class ItemAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if not request.user.is_superuser:
-            return qs.filter(todo_list__owner=request.user)
+            return qs.filter(list__owner=request.user)
         return qs
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "todo_list" and not request.user.is_superuser:
+        if db_field.name == "list" and not request.user.is_superuser:
             kwargs["queryset"] = List.objects.filter(owner=request.user)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)

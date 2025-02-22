@@ -30,7 +30,7 @@ class Item(models.Model):
     priority = models.CharField(
         max_length=6, choices=Priority.choices, default=Priority.MEDIUM
     )
-    todo_list = models.ForeignKey(List, on_delete=models.CASCADE, related_name="items")
+    list = models.ForeignKey(List, on_delete=models.CASCADE, related_name="items")
 
     def __str__(self):
         return self.title
