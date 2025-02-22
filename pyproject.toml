@@ -32,3 +32,8 @@ pytest-cov = "^6.0.0"
 pytest-xdist = "^3.6.1"
 pre-commit = "^4.1.0"
 psutil = "^7.0.0"
+
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "pyconfhyd.settings"
+python_files = ["test_*.py", "*_test.py"]
